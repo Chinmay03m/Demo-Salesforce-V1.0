@@ -1,4 +1,2 @@
 MyFirstApexTest
-FileUtilitiesTest
 GeocodingServiceTest
-TestSampleDataController
