@@ -36,7 +36,7 @@ jobs:
             --target-org Devorg \
             --test-level RunSpecifiedTests \
             --tests "$TEST_LIST"
-            --wait 30
+      # --wait 30
 
       # 3. DEPLOY: Triggered when PR is merged into main
       - name: 'Deploy to Org'
