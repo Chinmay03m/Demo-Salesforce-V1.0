@@ -3,7 +3,11 @@
     <fullName>Average_Annual_Electric_Cost__c</fullName>
     <inlineHelpText>Annual cost per square foot.</inlineHelpText>
     <label>Average Annual Electric Cost</label>
+<<<<<<< HEAD
     <precision>15</precision>
+=======
+    <precision>16</precision>
+>>>>>>> main
     <required>true</required>
     <scale>2</scale>
     <trackFeedHistory>true</trackFeedHistory>
