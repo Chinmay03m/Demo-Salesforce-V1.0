@@ -30,7 +30,7 @@ jobs:
       - name: 'Validate PR with Test List'
         run: |
           # Convert file lines into a comma-separated string
-          TEST_LIST=$(cat manifest/TestClass.txt | tr '\n' ',' | sed 's/,$//')
+          TEST_LIST=$(awk '{printf "--tests %s ", $1}' manifest/TestClass.txt)
           
           sf project deploy validate --manifest manifest/package.xml \
             --target-org Devorg \
