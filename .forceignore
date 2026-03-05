@@ -2,11 +2,83 @@
 # More information: https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_exclude_source.htm
 #
 
-package.xml
 
+
+package.xml
+ 
 # LWC configuration files
 **/jsconfig.json
 **/.eslintrc.json
 
 # LWC Jest
 **/__tests__/**
+
+# Ignore Standard Case SLA/Entitlement issues
+**/standardCase.slaProcess
+
+# Ignore CMS and Standard Content Types that can't be updated
+**/cms_document.contentType
+**/cms_image.contentType
+**/news.contentType
+
+# Ignore problematic Standard List Views
+**/ChangeRequest.AllChangeRequestsDefault.listView
+**/Problem.AllOpenProblems.listView
+**/Problem.AllProblemsDefault.listView
+
+# Ignore Commerce/Payment system objects causing picklist errors
+**/PaymentGroup.object
+**/CommSubscriptionChannelType.object
+
+# Ignore Trailhead-specific metadata that's missing fields
+**/trlhdtips/**
+**/sf_com_apps/**
+
+# Ignore all standard Profiles (The cause of 90% of your warnings)
+**/profiles/*.profile-meta.xml
+
+# Ignore System Settings that require specific features (Einstein, Data Cloud, etc.)
+**/settings/Analytics.settings
+**/settings/Campaign.settings
+**/settings/Communities.settings
+**/settings/CustomerDataPlatform.settings
+**/settings/EmailAdministration.settings
+**/settings/EncryptionKey.settings
+**/settings/IdentityProvider.settings
+**/settings/Pardot.settings
+**/settings/PlatformEncryption.settings
+**/settings/SecurityHub.settings
+**/settings/Territory2.settings
+
+# Ignore problematic Standard Objects and CMS
+**/objects/Case/standardCase.slaProcess
+**/objects/ChangeRequest/**
+**/objects/Problem/**
+**/objects/PaymentGroup/**
+**/objects/CommSubscriptionChannelType/**
+**/contenttypes/cms_document.contentType
+**/contenttypes/cms_image.contentType
+**/contenttypes/news.contentType
+
+# Ignore Trailhead/System Apps
+**/sf_com_apps/**
+**/trlhdtips/**
+
+# Block all Settings (This stops Analytics, Campaign, etc.)
+**/settings/*.settings-meta.xml
+**/settings/*.settings
+
+# Block Managed Content Types (CMS)
+**/managedContentTypes/*.managedContentType-meta.xml
+**/managedContentTypes/*.managedContentType
+
+# Block Installed Packages (trlhdtips, etc.)
+**/installedPackages/*.installedPackage-meta.xml
+
+# Block Entitlement Processes (Standard Case SLA)
+**/entitlementProcesses/*.entitlementProcess-meta.xml
+
+# Block standard object noise
+**/objects/ChangeRequest/**
+**/objects/Problem/**
+**/objects/Case/standardCase.slaProcess
