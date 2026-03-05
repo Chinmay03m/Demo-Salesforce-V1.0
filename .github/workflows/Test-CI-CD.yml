@@ -33,7 +33,7 @@ jobs:
           TEST_LIST=$(cat manifest/TestClass.txt | tr '\n' ',' | sed 's/,$//')
           
           sf project deploy validate --manifest manifest/package.xml \
-            --target-org devorg \
+            --target-org Devorg \
             --test-level RunSpecifiedTests \
             --tests "$TEST_LIST"
             --wait 30
