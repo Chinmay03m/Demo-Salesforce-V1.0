@@ -22,7 +22,7 @@ jobs:
       - name: 'Authenticate to Dev Org'
         run: |
           echo "${{ secrets.AUTH_URL }}" > sfdx_auth.txt
-          sf org login sfdx-url --sfdx-url-file sfdx_auth.txt --set-default --alias devorg
+          sf org login sfdx-url --sfdx-url-file sfdx_auth.txt --set-default --alias Devorg
           rm sfdx_auth.txt
 
       # 2. VALIDATE: Triggered when a PR is created/updated
@@ -30,7 +30,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           sf project deploy validate --source-dir force-app \
-            --target-org devorg \
+            --target-org Devorg \
             --test-level RunLocalTests \
             --wait 30
 
@@ -39,6 +39,6 @@ jobs:
         if: github.event_name == 'push'
         run: |
           sf project deploy start --source-dir force-app \
-            --target-org devorg \
+            --target-org Devorg \
             --test-level RunLocalTests \
             --wait 30
