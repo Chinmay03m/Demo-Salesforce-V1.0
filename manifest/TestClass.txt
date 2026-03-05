@@ -1,1 +1,4 @@
 MyFirstApexTest
+FileUtilitiesTest
+GeocodingServiceTest
+TestSampleDataController
