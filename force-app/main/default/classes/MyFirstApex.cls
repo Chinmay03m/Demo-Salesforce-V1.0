@@ -1,9 +1,6 @@
-
-public with sharing class MyFirstApex {
-    public MyFirstApex() {
-
-    }
-    static void myFirstMethod() {
-        System.debug('Hello World !!');
+public class MyFirstApex {
+    public void myFirstMethod() { 
+        System.debug('Hello Salesforce !!');
+        // Any other logic here...
     }
 }
