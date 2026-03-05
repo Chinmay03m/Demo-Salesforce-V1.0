@@ -27,14 +27,15 @@ jobs:
 
       # 2. VALIDATE: Triggered when a PR is created/updated
       # this didnt work because of the codee coverage required to be atleast 75% to deploy to production and i don't know how to solve it for now
-      - name: 'Validate PR with Test List'
+      - name: 'Validate PR (PowerShell)'
+        shell: pwsh
         run: |
-          # Convert file lines into a comma-separated string
-          TEST_LIST=$(cat manifest/TestClass.txt | tr '\n' ' ')          
-          sf project deploy validate --manifest manifest/package.xml \
-            --target-org Devorg \
-            --test-level RunSpecifiedTests \
-            --tests "$TEST_LIST"
+          $testFlags = Get-Content manifest/TestClass.txt | ForEach-Object { "--tests", $_.Trim() }
+          
+          sf project deploy validate --manifest manifest/package.xml `
+            --target-org devorg `
+            --test-level RunSpecifiedTests `
+            @testFlags
       # --wait 30
 
       # 3. DEPLOY: Triggered when PR is merged into main
