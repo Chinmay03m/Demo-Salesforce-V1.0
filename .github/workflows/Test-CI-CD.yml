@@ -30,7 +30,7 @@ jobs:
       - name: 'Validate PR (PowerShell)'
         shell: pwsh
         run: |
-          $testFlags = Get-Content manifest/TestClass.txt | ForEach-Object { "--tests", $_.Trim() }
+          $testFlags = Get-Content manifest/*TestClass.txt | ForEach-Object { "--tests", $_.Trim() }
           
           sf project deploy validate --manifest manifest/package.xml `
             --target-org Devorg `
