@@ -47,8 +47,8 @@ jobs:
                 shell: pwsh
                 run: |
                             sf project deploy validate --manifest/package.xml `
-                            --taget-org QAorg `
-                            --test-level RunSpecifiedTest `
+                            --target-org QA Org `
+                            --test-level RunSpecifiedTests `
                             @testclass
 
             -   name: 'Deploy on Devorg only'
