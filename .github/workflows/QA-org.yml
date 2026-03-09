@@ -56,7 +56,7 @@ jobs:
             -   name: 'Deploy on Devorg only'
                 if: github.event_name == 'push'
                 run: |
-                    sf project deploy --manifest/package.xml \
+                    sf project deploy start --manifest manifest/package.xml \
                         --target-org Devorg \
                         --test-level NoTestRun \
                         --wait 30
