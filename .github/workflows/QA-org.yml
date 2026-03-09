@@ -34,7 +34,7 @@ jobs:
             -   name: 'Validation of Devorg'
                 shell: pwsh
                 run: |
-                    @testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--tests' , $_.Trim()}
+                    $testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--tests' , $_.Trim()}
                             
                     sf project deploy validate --manifest manifest/package.xml `
                         --target-org Devorg `
@@ -42,7 +42,7 @@ jobs:
                         @testclass
                 
             # this is not required if the test classes are same for devorg and qa org
-            # @testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--test', $_.Trim()}
+            # $testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--test', $_.Trim()}
             -   name: 'Validation of QA org' 
                 shell: pwsh
                 run: |
