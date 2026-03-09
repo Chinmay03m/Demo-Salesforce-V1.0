@@ -1,7 +1,67 @@
 name: QA org CI Pipeline
+
 on: 
     pull_request:
         types: [opened, synchronize, reopened, closed]
         branches: [main]
     push:
         branches: [main]
+
+jobs: 
+    salesforce-org-setup:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: 'Checkout Source Code'
+                uses: actions/checkout@v4
+                with:       
+                    fetch-depth: 0
+
+            -   name: 'Install Salesforce CLI'
+                run: npm install salesforce@cli --global
+
+            -   name: 'Authenticate DevOrg'
+                run: |
+                    echo "${{secrets.DEV_AUTH_URL}} > Devorg_auth.txt
+                        sf org login sfdx-url --sfdx-url-file Devorg_auth.txt --set-default --alias Devorg
+                        rm Devorg_auth.txt 
+
+            -   name: 'Authenticate QA org'
+                run: |
+                    echo "${{secrets.QA_AUTH_URL}}" > qa_auth.txt
+                        sf org login sfdx-url --sfdx-url-file qa_auth.txt --alias QAorg
+                        rm qa_auth.txt
+
+            -   name: 'Validation of Devorg'
+                shell: pwsh
+                run: |
+                    @testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--tests' , $_.Trim()}
+                            
+                    sf project deploy validate --manifest manifest/package.xml `
+                        --target-org Devorg `
+                        --test-level RunSpecifiedTest `
+                        @testclass
+                
+            # this is not required if the test classes are same for devorg and qa org
+            # @testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--test', $_.Trim()}
+            -   name: 'Validation of QA org' 
+                shell: pwsh
+                run: |
+                            sf project deploy validate --manifest/package.xml `
+                            --taget-org QAorg `
+                            --test-level RunSpecifiedTest `
+                            @testclass
+
+            -   name: 'Deploy on Devorg only'
+                if: github.event_name == 'push'
+                run: |
+                    sf project deploy --manifest/package.xml \
+                        --target-org Devorg \
+                        --test-level NoTestRun \
+                        --wait 30
+
+
+
+
+
+
+    
