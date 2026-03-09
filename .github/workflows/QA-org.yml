@@ -47,7 +47,7 @@ jobs:
                 shell: pwsh
                 run: |
                             sf project deploy validate --manifest/package.xml `
-                            --target-org QA Org `
+                            --target-org chinmaymahawar@playful-shark-vamvuf.com `
                             --test-level RunSpecifiedTests `
                             @testclass
 
