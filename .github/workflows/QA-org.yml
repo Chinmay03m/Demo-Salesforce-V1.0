@@ -38,7 +38,7 @@ jobs:
                             
                     sf project deploy validate --manifest manifest/package.xml `
                         --target-org Devorg `
-                        --test-level RunSpecifiedTest `
+                        --test-level RunSpecifiedTests `
                         @testclass
                 
             # this is not required if the test classes are same for devorg and qa org
