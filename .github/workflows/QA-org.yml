@@ -21,7 +21,7 @@ jobs:
 
             -   name: 'Authenticate DevOrg'
                 run: |
-                    echo "${{secrets.DEV_AUTH_URL}} > Devorg_auth.txt
+                    echo "${{secrets.DEV_AUTH_URL}}"> Devorg_auth.txt
                         sf org login sfdx-url --sfdx-url-file Devorg_auth.txt --set-default --alias Devorg
                         rm Devorg_auth.txt 
 
