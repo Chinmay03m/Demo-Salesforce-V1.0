@@ -46,7 +46,7 @@ jobs:
             -   name: 'Validation of QA org' 
                 shell: pwsh
                 run: |
-                            sf project deploy validate --manifest/package.xml `
+                        sf project deploy validate --manifest manifest/package.xml `
                             --target-org chinmaymahawar@playful-shark-vamvuf.com `
                             --test-level RunSpecifiedTests `
                             @testclass
