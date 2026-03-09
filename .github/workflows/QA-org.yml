@@ -1,0 +1,7 @@
+name: QA org CI Pipeline
+on: 
+    pull_request:
+        types: [opened, synchronize, reopened, closed]
+        branches: [main]
+    push:
+        branches: [main]

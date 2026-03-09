@@ -1,4 +1,4 @@
-name: Salesforce CI/CD Pipeline
+name: Devorg CI/CD Pipeline
 
 on:
   pull_request:
@@ -27,6 +27,7 @@ jobs:
 
       # 2. VALIDATE: Triggered when a PR is created/updated
       # this didnt work because of the codee coverage required to be atleast 75% to deploy to production and i don't know how to solve it for now
+      # Now its working  fine(Deployment and matadata issue)
       - name: 'Validate PR (PowerShell)'
         shell: pwsh
         run: |
