@@ -39,7 +39,7 @@ jobs:
 
             -   name: 'Authenticate FTNexCell org'
                 run: | 
-                    echo "{{secrets.FTNEXCELL_AUTH_URL}}" > ftnexcell_auth.txt
+                    echo "${{secrets.FTNEXCELL_AUTH_URL}}" > ftnexcell_auth.txt
                         sf org login sfdx-url --sfdx-url-file ftnexcell_auth.txt --alias FTNexCell
                         rm ftnexcell_auth.txt
 
@@ -72,10 +72,11 @@ jobs:
             -   name: 'Deploy on Devorg only'
                 if: github.event_name == 'push'
                 run: |
-                    sf project deploy start --manifest manifest/package.xml \
-                        --target-org Devorg \
-                        --test-level RunSpecifiedTests \ 
-                        --tests $testArray
+                        $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }
+                        sf project deploy start --manifest manifest/package.xml \
+                            --target-org Devorg \
+                            --test-level RunSpecifiedTests \ 
+                            --tests $testArray
 
             -   name: 'Partial Validation of QA Org'
                 shell: pwsh
