@@ -72,7 +72,7 @@ jobs:
             -   name: 'Deploy on Devorg only'
                 if: github.event_name == 'push'
                 run: |
-                        $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }
+                        testArray=$(cat manifest/TestClass.txt | tr ',' ' ')
                         sf project deploy start --manifest manifest/package.xml \
                             --target-org Devorg \
                             --test-level RunSpecifiedTests \ 
