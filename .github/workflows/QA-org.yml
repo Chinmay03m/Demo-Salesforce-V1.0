@@ -34,31 +34,32 @@ jobs:
             -   name: 'Validation of Devorg'
                 shell: pwsh
                 run: |
-                    $testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--tests' , $_.Trim()}
-                            
+                    
+                    $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }        
                     sf project deploy validate --manifest manifest/package.xml `
                         --target-org Devorg `
                         --test-level RunSpecifiedTests `
-                        @testclass
+                        --tests $testArray
                 
             # this is not required if the test classes are same for devorg and qa org
             # $testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--test', $_.Trim()}
             -   name: 'Validation of QA org' 
                 shell: pwsh
                 run: |
-                    $testclass = Get-Content manifest/*TestClass.txt | ForEach-Object {'--tests' , $_.Trim()}
+                    $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }
                 
                         sf project deploy validate --manifest manifest/package.xml `
                             --target-org chinmaymahawar@playful-shark-vamvuf.com `
                             --test-level RunSpecifiedTests `
-                            @testclass
+                            --tests $testArray
 
             -   name: 'Deploy on Devorg only'
                 if: github.event_name == 'push'
                 run: |
                     sf project deploy start --manifest manifest/package.xml \
                         --target-org Devorg \
-                        --test-level NoTestRun \
+                        --test-level RunSpecifiedTests \
+                        --tests $testArray \
                         --wait 30
 
 

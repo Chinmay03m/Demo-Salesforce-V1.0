@@ -1,0 +1,121 @@
+name: "Mimic AZ CI/CD pipelines"
+
+on: 
+    pull_request:
+        types: [opened, synchronize, reopened, closed]
+        branches: [main]
+    push:
+        branches: [main] 
+
+jobs:
+    salesforce-org-setup:
+        runs-on: ubuntu-Latest
+        steps:
+            -   name: 'Checkout Source Code'
+                uses: actions/checkout@v4'
+                with:
+                    fetch-depth: 0
+
+            -   name: 'Install Salesforce CLI'
+                run: npm install @salesforce/cli --global
+
+            -   name: 'Authenticate DevOrg'
+                run: |
+                    echo "${{secrets.DEV_AUTH_URL}}" > Devorg_auth.txt
+                        sf org login sfdx-url --sfdx-url-file Devorg_auth.txt --set-default --alias Devorg
+                        rm Devorg_auth.txt
+            
+            -   name: 'Authenticate QA org'
+                run: |
+                    echo "${{secrets.QA_AUTH_URL}}" > qa_auth.txt
+                        sf org login sfdx-url --sfdx-url-file qa_auth.txt --alias QA
+                        rm qa_auth.txt
+                
+            -   name: 'Authenticate SIT org'
+                run: |
+                    echo "${{secrets.SIT_AUTH_URL}}" > sit_auth.txt
+                        sf org login sfdx-url --sfdx-url-file sit_auth.txt --alias SIT
+                        rm sit_auth.txt
+
+            -   name: 'Authenticate FTNexCell org'
+                run: | 
+                    echo "{{secrets.FTNEXCELL_AUTH_URL}}" > ftnexcell_auth.txt
+                        sf org login sfdx-url --sfdx-url-file ftnexcell_auth.txt --alias FTNexCell
+                        rm ftnexcell_auth.txt
+
+            -   name: 'Authenticate UAT org'
+                run: |
+                    echo "${{secrets.UAT_AUTH_URL}}" > uat_auth.txt
+                        sf org login sfdx-url --sfdx-url-file uat_auth.txt --alias UAT 
+                        rm uat_auth.txt
+
+            -   name: 'Authenticate Pre-Production org'
+                run: |
+                    echo "${{secrets.PREPROD_AUTH_URL}}" > preprod_auth.txt
+                        sf org login sfdx-url --sfdx-url-file preprod_auth.txt --alias PreProd 
+                        rm preprod_auth.txt 
+                
+            -   name: 'Authenticate Production org'
+                run: | 
+                    echo "${{secrets.PROD_AUTH_URL}}" > prod_auth.txt
+                        sf org login sfdx-url --sfdx-url-file prod_auth.txt --alias Prod
+                        rm prod_auth.txt  
+                        
+            -   name: 'Partial Validation of Devorg'
+                shell: pwsh
+                run: |
+                        $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org Devorg --test-level RunSpecifiedTests `
+                        --tests $testArray 
+
+            -   name: 'Deploy on Devorg only'
+                if: github.event_name == 'push'
+                run: |
+                    sf project deploy start --manifest manifest/package.xml \
+                        --target-org Devorg \
+                        --test-level RunSpecifiedTests \ 
+                        --tests $testArray
+
+            -   name: 'Partial Validation of QA Org'
+                shell: pwsh
+                run: | 
+                        $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org QA --test-level RunSpecifiedTests `
+                        --tests $testArray
+
+            -   name: 'Partial Validation of SIT Org'
+                shell: pwsh
+                run: | 
+                        $testArray = (Get-Content manifest/TestClass.txt) -split ',' | ForEach-Object { $_.Trim() }
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org SIT --test-level RunSpecifiedTests `
+                        --tests $testArray
+
+            -   name: 'Full Validation of FTNexCell Org'
+                shell: pwsh
+                run: | 
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org FTNexCell --test-level RunLocalTests
+
+            -   name: 'Full Validation of UAT Org'
+                shell: pwsh
+                run: | 
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org UAT --test-level RunLocalTests
+
+            -   name: 'Full Validation of PreProd Org'
+                shell: pwsh
+                run: | 
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org PreProd --test-level RunLocalTests
+
+            -   name: 'Full Validation of Production Org'
+                shell: pwsh
+                run: | 
+                        sf project deploy validate --manifest manifest/package.xml `
+                        --target-org Prod --test-level RunLocalTests
+
+            
+    
