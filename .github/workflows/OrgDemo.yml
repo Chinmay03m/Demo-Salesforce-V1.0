@@ -75,7 +75,7 @@ jobs:
                         testArray=$(cat manifest/TestClass.txt | tr ',' ' ')
                         sf project deploy start --manifest manifest/package.xml \
                             --target-org Devorg \
-                            --test-level RunSpecifiedTests \ 
+                            --test-level RunSpecifiedTests \
                             --tests $testArray
 
             -   name: 'Partial Validation of QA Org'
