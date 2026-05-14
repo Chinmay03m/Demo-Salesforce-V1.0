@@ -21,4 +21,4 @@ The `sfdx-project.json` file contains useful configuration information for your 
 This is just for the learning purposes that how CI/CD works in the salesforce environment 
 Demo Text !!! 
 
-Trying Cherry Pick
+Trying Cherry Pick, Editing it for refernece :)
