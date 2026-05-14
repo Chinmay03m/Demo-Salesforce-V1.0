@@ -31,15 +31,19 @@ jobs:
       - name: Generate Package.xml (QA vs SIT)
         run: |
           # Ensure both branches are available locally
-          git fetch origin qa sit
+          git fetch origin v2vqa v2vsit
           
           # Generate the manifest based on metadata differences between SIT and QA
           # This creates a 'package' directory with only changed components
-          sf project generate package --output-dir manifest --source-dir force-app --revision-from origin/sit --to origin/qa
+          sf project generate manifest \
+            --output-dir manifest \
+            --source-dir force-app \
+            --revision-from origin/v2vsit \
+            --to origin/v2vqa
           
-          echo "Generated package.xml content:"
-          cat manifest/package.xml
+          echo "### Generated package.xml for SIT Deployment" >> $GITHUB_STEP_SUMMARY
+          cat manifest/package.xml >> $GITHUB_STEP_SUMMARY
 
       - name: Validate and Deploy to SIT
         run: |
-          sf project deploy start --manifest manifest/package.xml --target-org sit_org --wait 30
+          sf project deploy validate --manifest manifest/package.xml --target-org v2vsit --wait 30
