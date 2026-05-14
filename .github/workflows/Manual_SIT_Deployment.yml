@@ -1,0 +1,45 @@
+name: Manual SIT Deployment (Dynamic Package)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual SIT Sync'
+
+jobs:
+  deploy-to-sit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Install Salesforce CLI
+        run: |
+          npm install @salesforce/cli --global
+          sf version
+
+      - name: Authenticate SIT Org
+        run: |
+          # Use your SIT Auth URL stored in GitHub Secrets
+          echo "${{ secrets.SIT_AUTH_URL }}" > auth_url.txt
+          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias v2vsit
+
+      - name: Generate Package.xml (QA vs SIT)
+        run: |
+          # Ensure both branches are available locally
+          git fetch origin qa sit
+          
+          # Generate the manifest based on metadata differences between SIT and QA
+          # This creates a 'package' directory with only changed components
+          sf project generate package --output-dir manifest --source-dir force-app --revision-from origin/sit --to origin/qa
+          
+          echo "Generated package.xml content:"
+          cat manifest/package.xml
+
+      - name: Validate and Deploy to SIT
+        run: |
+          sf project deploy start --manifest manifest/package.xml --target-org sit_org --wait 30
