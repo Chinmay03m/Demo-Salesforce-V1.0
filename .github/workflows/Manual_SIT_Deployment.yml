@@ -35,10 +35,14 @@ jobs:
           
           # Generate the manifest based on metadata differences between SIT and QA
           # This creates a 'package' directory with only changed components
-          sf project generate package --output-dir manifest --source-dir force-app --revision-from origin/v2vsit --to origin/v2vqa
+          sf project generate manifest \
+            --output-dir manifest \
+            --source-dir force-app \
+            --revision-from origin/v2vsit \
+            --to origin/v2vqa
           
-          echo "Generated package.xml content:"
-          cat manifest/package.xml
+          echo "### Generated package.xml for SIT Deployment" >> $GITHUB_STEP_SUMMARY
+          cat manifest/package.xml >> $GITHUB_STEP_SUMMARY
 
       - name: Validate and Deploy to SIT
         run: |
