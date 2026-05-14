@@ -1,49 +1,59 @@
-name: Manual SIT Deployment (Dynamic Package)
+name: Manual SIT Deployment (Dynamic Delta)
 
 on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for manual trigger'
+        description: 'Reason for deployment'
         required: false
-        default: 'Manual SIT Sync'
+        default: 'Manual Sync from QA'
 
 jobs:
-  deploy-to-sit:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          
+          fetch-depth: 0 
+
       - name: Install Salesforce CLI
         run: |
           npm install @salesforce/cli --global
           sf version
 
+      - name: Install SFDX Git Delta Plugin
+        run: |
+          echo y | sf plugins install sfdx-git-delta
+
       - name: Authenticate SIT Org
         run: |
-          # Use your SIT Auth URL stored in GitHub Secrets
+          # Ensure you have SIT_AUTH_URL stored in your GitHub Secrets
           echo "${{ secrets.SIT_AUTH_URL }}" > auth_url.txt
-          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias v2vsit
+          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias sit_org
 
-      - name: Generate Package.xml (QA vs SIT)
+      - name: Generate Delta Manifest
         run: |
-          # Ensure both branches are available locally
+          
           git fetch origin v2vqa v2vsit
           
-          # Generate the manifest based on metadata differences between SIT and QA
-          # This creates a 'package' directory with only changed components
-          sf project generate manifest \
-            --output-dir manifest \
-            --source-dir force-app \
-            --revision-from origin/v2vsit \
-            --to origin/v2vqa
           
-          echo "### Generated package.xml for SIT Deployment" >> $GITHUB_STEP_SUMMARY
-          cat manifest/package.xml >> $GITHUB_STEP_SUMMARY
+          mkdir delta-output
+          
+          
+          # --to: The source branch (v2vqa)
+          # --from: The target branch (v2vsit)
+          sf sgd:source:delta --to origin/v2vqa --from origin/v2vsit --output delta-output/
+          
+         
+          echo "--- Generated package.xml ---"
+          cat delta-output/package/package.xml
 
-      - name: Validate and Deploy to SIT
+      - name: Deploy to SIT
         run: |
-          sf project deploy validate --manifest manifest/package.xml --target-org v2vsit --wait 30
+          # Deploys only the components listed in the generated manifest
+          sf project deploy start \
+            --manifest delta-output/package/package.xml \
+            --target-org sit_org \
+            --wait 30 \
+            --test-level NoTestRun
