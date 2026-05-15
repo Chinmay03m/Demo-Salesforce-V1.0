@@ -49,11 +49,11 @@ jobs:
           echo "--- Generated package.xml ---"
           cat delta-output/package/package.xml
 
-      - name: Deploy to SIT
+      - name: Validate to SIT
         run: |
           # Deploys only the components listed in the generated manifest
-          sf project deploy start \
+          sf project deploy validate \
             --manifest delta-output/package/package.xml \
             --target-org sit_org \
             --wait 30 \
-            --test-level NoTestRun
+            --test-level RunLocalTests
