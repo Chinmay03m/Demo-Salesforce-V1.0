@@ -47,7 +47,7 @@ jobs:
           
           echo "Processing manifest: ${CURRENT_FILENAME}"
           
-          sf sgd:source:delta --to origin/v2vqa --from origin/v2vsit --output manifests/delta/
+          sf sgd:source:delta --to origin/v2vqa --from origin/v2vsit --output-dir manifests/delta/
           
           mv manifests/delta/package/package.xml "${FILE_PATH}"
           
