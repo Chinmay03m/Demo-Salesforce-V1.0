@@ -1,0 +1,59 @@
+name: Manual SIT Deployment (Dynamic Delta)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for deployment'
+        required: false
+        default: 'Manual Sync from QA'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Salesforce CLI
+        run: |
+          npm install @salesforce/cli --global
+          sf version
+
+      - name: Install SFDX Git Delta Plugin
+        run: |
+          echo y | sf plugins install sfdx-git-delta
+
+      - name: Authenticate SIT Org
+        run: |
+          # Ensure you have SIT_AUTH_URL stored in your GitHub Secrets
+          echo "${{ secrets.SIT_AUTH_URL }}" > auth_url.txt
+          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias sit_org
+
+      - name: Generate, Rename, and Validate
+        run: |
+          git fetch origin v2vqa v2vsit
+          mkdir -p manifests/delta
+          
+          CURRENT_FILENAME="$(date +'%Y-%m-%d')_package.xml"
+          FILE_PATH="manifests/delta/package/${CURRENT_FILENAME}"
+          
+          echo "Processing manifest: ${CURRENT_FILENAME}"
+          
+          sf sgd:source:delta --to origin/v2vqa --from origin/v2vsit --output-dir manifests/delta/
+          
+          mv manifests/delta/package/package.xml "${FILE_PATH}"
+          
+          # Note: We use $FILE_PATH (bash syntax) here
+          sf project deploy start \
+            --manifest "${FILE_PATH}" \
+            --target-org sit_org \
+            --wait 30 \
+            --test-level RunLocalTests

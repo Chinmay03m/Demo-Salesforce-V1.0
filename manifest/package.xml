@@ -5,6 +5,8 @@
         <members>MyFirstApexTest</members>
         <members>GeocodingService</members>
         <members>GeocodingServiceTest</members>
+        <members>TestWorkflow</members>
+        <members>TestWorkflowTest</members>
         <name>ApexClass</name>
     </types>
     <types>
