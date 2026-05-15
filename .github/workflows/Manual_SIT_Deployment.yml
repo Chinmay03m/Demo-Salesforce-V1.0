@@ -17,6 +17,11 @@ jobs:
         with:
           fetch-depth: 0 
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Install Salesforce CLI
         run: |
           npm install @salesforce/cli --global
@@ -32,28 +37,23 @@ jobs:
           echo "${{ secrets.SIT_AUTH_URL }}" > auth_url.txt
           sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias sit_org
 
-      - name: Generate Delta Manifest
+      - name: Generate, Rename, and Validate
         run: |
-          
           git fetch origin v2vqa v2vsit
+          mkdir -p manifests/delta
           
+          CURRENT_FILENAME="$(date +'%Y-%m-%d')_package.xml"
+          FILE_PATH="manifests/delta/package/${CURRENT_FILENAME}"
           
-          mkdir delta-output
+          echo "Processing manifest: ${CURRENT_FILENAME}"
           
+          sf sgd:source:delta --to origin/v2vqa --from origin/v2vsit --output manifests/delta/
           
-          # --to: The source branch (v2vqa)
-          # --from: The target branch (v2vsit)
-          sf sgd:source:delta --to origin/v2vqa --from origin/v2vsit --output delta-output/
+          mv manifests/delta/package/package.xml "${FILE_PATH}"
           
-         
-          echo "--- Generated package.xml ---"
-          cat delta-output/package/package.xml
-
-      - name: Validate to SIT
-        run: |
-          # Deploys only the components listed in the generated manifest
-          sf project deploy validate \
-            --manifest delta-output/package/package.xml \
+          # Note: We use $FILE_PATH (bash syntax) here
+          sf project deploy start \
+            --manifest "${FILE_PATH}" \
             --target-org sit_org \
             --wait 30 \
             --test-level RunLocalTests
