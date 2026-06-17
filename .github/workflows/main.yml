@@ -1,0 +1,102 @@
+name: Manual Deployment (Dynamic Delta)
+ 
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for deployment'
+        required: false
+        default: 'Manual Sync from QA'
+
+      branchFrom: 
+        description: 'Which branch do we deploy from?' 
+        required: true
+        type: choice
+        options: 
+            - V2VSIT
+            - UATNEXCELL
+            - FTNEXCELL
+            - PREPRODV2V
+
+
+      branchTo: 
+        description: 'Branch where to deploy' 
+        required: true
+        type: choice
+        options: 
+            - V2VSIT
+            - UATNEXCELL
+            - FTNEXCELL
+            - PREPRODV2V
+
+      ticket: 
+            description: 'Ticket No. if any'
+            required: false
+            default: '' # leave blank if current date is required
+ 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+ 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+ 
+      - name: Install Salesforce CLI
+        run: |
+          npm install @salesforce/cli --global
+          sf version
+ 
+      - name: Install SFDX Git Delta Plugin
+        run: |
+          echo y | sf plugins install sfdx-git-delta
+
+      - name: Calculate fallback date
+        if: ${{ inputs.ticket == '' }}
+        run: |
+          echo "FINAL_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Use manual input date
+        if: ${{ inputs.ticket != '' }}
+        run: |
+          echo "FINAL_DATE=${{ inputs.ticket }}" >> $GITHUB_ENV
+
+      - name: Display the target date
+        run: |
+          echo "The workflow date being used is: $FINAL_DATE"
+ 
+      - name: Authenticate ${{ inputs.branchTo}} Org
+        run: |
+          # Ensure you have AUTH_URLs stored in your GitHub Secrets 
+          echo "${{ secrets.inputs.branchTo_AUTH_URL }}" > auth_url.txt
+          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias ${{inputs.branchTo }}
+
+      - name: Authenticate ${{ inputs.branchFrom}} Org
+        run: |
+          # Ensure you have AUTH_URLs stored in your GitHub Secrets 
+          echo "${{ secrets.inputs.branchFrom_AUTH_URL }}" > auth_url.txt
+          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias ${{inputs.branchFrom }}
+ 
+      - name: Generate, Rename, and Validate
+        run: |
+          git fetch origin ${{ inputs.branchFrom}} ${{ inputs.branchTo}}
+          mkdir -p manifests/delta
+          CURRENT_FILENAME="$(date +'%Y-%m-%d')_package.xml"
+          FILE_PATH="manifests/delta/package/${CURRENT_FILENAME}"
+          echo "Processing manifest: ${CURRENT_FILENAME}"
+          sf sgd:source:delta --to origin/${{ inputs.branchFrom}} --from origin/${{inputs.branchTo}} --output-dir manifests/delta/
+          mv manifests/delta/package/package.xml "${FILE_PATH}"
+          # Note: We use $FILE_PATH (bash syntax) here
+          sf project deploy validate \
+            --manifest "${FILE_PATH}" \
+            --target-org sit_org \
+            --wait 30 \
+            --test-level RunLocalTests
+ 
+ 
