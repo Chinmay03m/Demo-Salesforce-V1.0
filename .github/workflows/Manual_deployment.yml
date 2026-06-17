@@ -13,10 +13,10 @@ on:
         required: true
         type: choice
         options: 
-            - V2VSIT
-            - UATNEXCELL
+            - SIT
+            - UAT
             - FTNEXCELL
-            - PREPRODV2V
+            - PREPROD
 
 
       branchTo: 
@@ -24,10 +24,10 @@ on:
         required: true
         type: choice
         options: 
-            - V2VSIT
-            - UATNEXCELL
+            - SIT
+            - UAT
             - FTNEXCELL
-            - PREPRODV2V
+            - PREPROD
 
       ticket: 
             description: 'Ticket No. if any'
