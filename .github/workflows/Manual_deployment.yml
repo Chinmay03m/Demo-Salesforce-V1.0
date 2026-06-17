@@ -1,4 +1,4 @@
-name: Manual Deployment (Dynamic Delta)
+name: Manual SIT Deployment (Dynamic Delta)
  
 on:
   workflow_dispatch:
@@ -18,7 +18,6 @@ on:
             - FTNEXCELL
             - PREPROD
 
-
       branchTo: 
         description: 'Branch where to deploy' 
         required: true
@@ -32,7 +31,7 @@ on:
       ticket: 
             description: 'Ticket No. if any'
             required: false
-            default: '' # leave blank if current date is required
+            default: '' 
  
 jobs:
   deploy:
@@ -73,30 +72,31 @@ jobs:
  
       - name: Authenticate ${{ inputs.branchTo}} Org
         run: |
-          # Ensure you have AUTH_URLs stored in your GitHub Secrets 
-          echo "${{ secrets.inputs.branchTo_AUTH_URL }}" > auth_url.txt
-          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias ${{inputs.branchTo }}
+          # FIX 1: Accessing dynamic secrets using bracket format
+          # IMPORTANT: Your GitHub Secrets names MUST match exactly, e.g., V2VSIT_AUTH_URL
+          echo "${{ secrets[format('{0}_AUTH_URL', inputs.branchTo)] }}" > auth_to_url.txt
+          sf org login sfdx-url --sfdx-url-file auth_to_url.txt --set-default --alias "${{ inputs.branchTo }}"
 
       - name: Authenticate ${{ inputs.branchFrom}} Org
         run: |
-          # Ensure you have AUTH_URLs stored in your GitHub Secrets 
-          echo "${{ secrets.inputs.branchFrom_AUTH_URL }}" > auth_url.txt
-          sf org login sfdx-url --sfdx-url-file auth_url.txt --set-default --alias ${{inputs.branchFrom }}
+          echo "${{ secrets[format('{0}_AUTH_URL', inputs.branchFrom)] }}" > auth_from_url.txt
+          sf org login sfdx-url --sfdx-url-file auth_from_url.txt --alias "${{ inputs.branchFrom }}"
  
       - name: Generate, Rename, and Validate
         run: |
-          git fetch origin ${{ inputs.branchFrom}} ${{ inputs.branchTo}}
+          git fetch origin ${{ inputs.branchFrom }}:refs/remotes/origin/${{ inputs.branchFrom }}
+          git fetch origin ${{ inputs.branchTo }}:refs/remotes/origin/${{ inputs.branchTo }}
+          
           mkdir -p manifests/delta
           CURRENT_FILENAME="$(date +'%Y-%m-%d')_package.xml"
           FILE_PATH="manifests/delta/package/${CURRENT_FILENAME}"
           echo "Processing manifest: ${CURRENT_FILENAME}"
-          sf sgd:source:delta --to origin/${{ inputs.branchFrom}} --from origin/${{inputs.branchTo}} --output-dir manifests/delta/
+          
+          sf sgd:source:delta --to origin/${{ inputs.branchFrom }} --from origin/${{ inputs.branchTo }} --output-dir manifests/delta/
           mv manifests/delta/package/package.xml "${FILE_PATH}"
-          # Note: We use $FILE_PATH (bash syntax) here
+          
           sf project deploy validate \
             --manifest "${FILE_PATH}" \
-            --target-org sit_org \
+            --target-org "${{ inputs.branchTo }}" \
             --wait 30 \
             --test-level RunLocalTests
- 
- 
