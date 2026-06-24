@@ -1,4 +1,4 @@
-name: Manual Deployment to any branch or use any pr_title
+name: Manual - Deployment (Dynamic Delta)
  
 on:
   workflow_dispatch:
@@ -13,10 +13,10 @@ on:
         required: true
         type: choice
         options: 
-            - SIT
-            - UAT
-            - FTNEXCELL
-            - PREPROD
+           - SIT
+           - UAT
+           - FTNEXCELL
+           - PREPROD
 
       branchTo: 
         description: 'Branch where to deploy' 
@@ -27,7 +27,8 @@ on:
             - UAT
             - FTNEXCELL
             - PREPROD
-pr_titles:
+            
+      pr_titles:
         description: 'Paste PR Titles separated by commas (e.g., Fix Bug A, Update Class B)'
         required: true
         type: string 
