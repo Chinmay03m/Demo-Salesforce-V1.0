@@ -30,7 +30,7 @@ on:
             
       pr_titles:
         description: 'Paste PR Titles separated by commas (e.g., Fix Bug A, Update Class B)'
-        required: true
+        required: false
         type: string 
 
       Comment: 
