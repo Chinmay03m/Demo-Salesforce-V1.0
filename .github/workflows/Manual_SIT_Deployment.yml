@@ -52,7 +52,7 @@ jobs:
           mv manifests/delta/package/package.xml "${FILE_PATH}"
           
           # Note: We use $FILE_PATH (bash syntax) here
-          sf project deploy start \
+          sf project deploy validate \
             --manifest "${FILE_PATH}" \
             --target-org sit_org \
             --wait 30 \
