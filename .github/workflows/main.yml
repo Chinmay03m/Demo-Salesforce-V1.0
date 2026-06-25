@@ -80,19 +80,18 @@ jobs:
           mkdir -p staging_source
           mkdir -p manifests/delta
           
-          # Dynamic casing conversion
           BRANCH_TO_LOWER=$(echo "${{ github.event.inputs.branchTo }}" | tr '[:upper:]' '[:lower:]')
           BRANCH_FROM_LOWER=$(echo "${{ github.event.inputs.branchFrom }}" | tr '[:upper:]' '[:lower:]')
           
           git fetch origin "$BRANCH_FROM_LOWER"
           git fetch origin "$BRANCH_TO_LOWER"
-
+          
           RAW_INPUT="${{ github.event.inputs.pr_titles }}"
           echo "Processing combined inputs..."
           
           IFS=',' read -ra TITLES <<< "$RAW_INPUT"
           FOUND_ANY_COMMIT=false
-
+          
           for TITLE in "${TITLES[@]}"; do
             TITLE=$(echo "$TITLE" | xargs)
             if [ -z "$TITLE" ]; then
@@ -106,17 +105,16 @@ jobs:
             
             if [ -z "$COMMIT_HASH" ]; then
               echo "❌ Error: Could not find any commit matching title '$TITLE'"
+              continue
             fi
-            
             
             echo "✅ Found commit hash: $COMMIT_HASH"
             FOUND_ANY_COMMIT=true
-
+          
             PARENT_COUNT=$(git rev-list --parents -n 1 "$COMMIT_HASH" | wc -w)
             
             if [ "$PARENT_COUNT" -gt 2 ]; then
               echo "🔀 Merge commit detected. Diffing relative to BranchTo mainline (^1)..."
-              # Diff the merge commit against its first parent to capture exactly what changed relative to the target branch
               CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_HASH^1" "$COMMIT_HASH")
             else
               echo "📄 Regular commit detected. Diffing against its direct parent..."
@@ -138,16 +136,18 @@ jobs:
               fi
             done
           done
-
-          if [ "$FOUND_ANY_COMMIT" = false ]; then
-           sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --output-dir manifests/delta/ --generate-delta          
-          fi
-
-          echo "----------------------------------------"
-          echo "🚀 Generating Delta Manifest From Staged Files Only"
           
-          sf sgd source delta --from "origin/$BRANCH_TO_LOWER" --to "origin/$BRANCH_TO_LOWER" --source staging_source --output manifests/delta/ --generate-delta
-
+          echo "----------------------------------------"
+          # FIXED: Mutually exclusive routing prevents files from wiping out branch comparison results
+          if [ "$FOUND_ANY_COMMIT" = false ]; then
+            echo "🌿 No manual PR titles provided. Comparing full branches..."
+            echo "Comparing changes in origin/$BRANCH_FROM_LOWER against reference branch origin/$BRANCH_TO_LOWER"
+            sf sgd source delta --from "origin/$BRANCH_TO_LOWER" --to "origin/$BRANCH_FROM_LOWER" --output-dir manifests/delta/ --generate-delta          
+          else
+            echo "🚀 PR Titles found! Generating Delta Manifest From Staged Files Only..."
+            sf sgd source delta --from "origin/$BRANCH_TO_LOWER" --to "origin/$BRANCH_TO_LOWER" --source-dir staging_source --output-dir manifests/delta/ --generate-delta
+          fi
+          
           CURRENT_FILENAME="$(date +'%Y-%m-%d')_package.xml"
           FILE_PATH="manifests/delta/package/${CURRENT_FILENAME}"
           
@@ -162,7 +162,6 @@ jobs:
           echo "Content of generated package manifest:"
           cat "${FILE_PATH}"
           
-          # FIXED: Check if package.xml actually contains metadata types before deploying
           if grep -q "<types>" "${FILE_PATH}"; then
             echo "🚀 Changes detected! Proceeding with Salesforce validation..."
             sf project deploy validate \
@@ -173,3 +172,4 @@ jobs:
           else
             echo "✅ No local changes or branch differences found to deploy. Skipping validation step safely!"
           fi
+
