@@ -140,8 +140,7 @@ jobs:
           done
 
           if [ "$FOUND_ANY_COMMIT" = false ]; then
-          sf sgd source delta --to "origin/$BRANCH_FROM_LOWER" --from "origin/$BRANCH_TO_LOWER" --output-dir manifests/delta/ --generate-delta          
-          fi
+          sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --output-dir manifests/delta/ --generate-delta          fi
 
           echo "----------------------------------------"
           echo "🚀 Generating Delta Manifest From Staged Files Only"
