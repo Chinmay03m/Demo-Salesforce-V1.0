@@ -152,18 +152,24 @@ jobs:
           FILE_PATH="manifests/delta/package/${CURRENT_FILENAME}"
           
           if [ ! -f "manifests/delta/package/package.xml" ]; then
-             echo "❌ Error: package.xml could not be generated from isolated files."
+             echo "❌ Error: package.xml could not be generated."
+             exit 1
           fi
           
           echo "Moving package.xml to: ${FILE_PATH}"
           mv manifests/delta/package/package.xml "${FILE_PATH}"
           
-
           echo "Content of generated package manifest:"
           cat "${FILE_PATH}"
           
-          sf project deploy validate \
-            --manifest "${FILE_PATH}" \
-            --target-org "${{ github.event.inputs.branchTo }}" \
-            --wait 30 \
-            --test-level RunLocalTests
+          # FIXED: Check if package.xml actually contains metadata types before deploying
+          if grep -q "<types>" "${FILE_PATH}"; then
+            echo "🚀 Changes detected! Proceeding with Salesforce validation..."
+            sf project deploy validate \
+              --manifest "${FILE_PATH}" \
+              --target-org "${{ github.event.inputs.branchTo }}" \
+              --wait 30 \
+              --test-level RunLocalTests
+          else
+            echo "✅ No local changes or branch differences found to deploy. Skipping validation step safely!"
+          fi
