@@ -58,7 +58,7 @@ jobs:
         run: |
           npm install --global @salesforce/cli
           sf --version
-          sf plugin --core
+          sf plugins --core
  
       - name: Install SFDX Git Delta Plugin
         run: |
