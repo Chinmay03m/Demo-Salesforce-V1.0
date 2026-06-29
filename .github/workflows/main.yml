@@ -149,7 +149,7 @@ jobs:
             
             # 3. Print actual differences directly to the log to debug Git's visibility
             echo "--- Debugging Git Diff output directly ---"
-            git diff --name-status "origin/$BRANCH_TO_LOWER"..."origin/$BRANCH_FROM_LOWER"
+            git diff --name-status "origin/$BRANCH_FROM_LOWER"..."origin/$BRANCH_TO_LOWER"
             echo "----------------------------------------"
             
             # 4. Use the triple-dot syntax to find changes introduced in FROM that are not in TO
