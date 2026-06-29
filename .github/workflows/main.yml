@@ -84,8 +84,14 @@ jobs:
           BRANCH_TO_LOWER=$(echo "${{ github.event.inputs.branchTo }}" | tr '[:upper:]' '[:lower:]')
           BRANCH_FROM_LOWER=$(echo "${{ github.event.inputs.branchFrom }}" | tr '[:upper:]' '[:lower:]')
           
-          git fetch origin "$BRANCH_FROM_LOWER"
-          git fetch origin "$BRANCH_TO_LOWER"
+          # Explicitly track and fetch the full history for both target branches
+          git remote set-branches origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
+          git fetch --prune --unshallow origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
+          
+          # Ensure Git knows how to map the references locally
+          git checkout "$BRANCH_TO_LOWER"
+          git checkout "$BRANCH_FROM_LOWER"
+
           
           RAW_INPUT="${{ github.event.inputs.pr_titles }}"
           echo "Processing combined inputs..."
