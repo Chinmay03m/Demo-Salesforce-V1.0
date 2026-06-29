@@ -86,11 +86,13 @@ jobs:
           
           # Explicitly track and fetch the full history for both target branches
           git remote set-branches origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
-          git fetch --prune --unshallow origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
+
+          # Fetch the specific branches without using --unshallow
+          git fetch --prune origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
           
-          # Ensure Git knows how to map the references locally
-          git checkout "$BRANCH_TO_LOWER"
-          git checkout "$BRANCH_FROM_LOWER"
+          # Create and track local branches so sfdx-git-delta can resolve them
+          git checkout -B "$BRANCH_TO_LOWER" "origin/$BRANCH_TO_LOWER"
+          git checkout -B "$BRANCH_FROM_LOWER" "origin/$BRANCH_FROM_LOWER"
 
           
           RAW_INPUT="${{ github.event.inputs.pr_titles }}"
