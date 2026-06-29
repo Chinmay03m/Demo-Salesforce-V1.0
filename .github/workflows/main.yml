@@ -52,12 +52,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '23'
  
       - name: Install Salesforce CLI
         run: |
-          npm install @salesforce/cli --global
-          sf version
+          npm install --global @salesforce/cli
+          sf --version
+          sf plugin --core
  
       - name: Install SFDX Git Delta Plugin
         run: |
