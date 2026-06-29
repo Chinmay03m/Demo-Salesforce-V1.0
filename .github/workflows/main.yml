@@ -86,13 +86,9 @@ jobs:
           
           # Explicitly track and fetch the full history for both target branches
           git remote set-branches origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
-
-          # Fetch the specific branches without using --unshallow
           git fetch --prune origin "$BRANCH_FROM_LOWER" "$BRANCH_TO_LOWER"
           
-          # Create and track local branches so sfdx-git-delta can resolve them
-          git checkout -B "$BRANCH_TO_LOWER" "origin/$BRANCH_TO_LOWER"
-          git checkout -B "$BRANCH_FROM_LOWER" "origin/$BRANCH_FROM_LOWER"
+          git checkout -f "$BRANCH_TO_LOWER"
 
           
           RAW_INPUT="${{ github.event.inputs.pr_titles }}"
@@ -150,7 +146,13 @@ jobs:
           # FIXED: Mutually exclusive routing prevents files from wiping out branch comparison results
           if [ "$FOUND_ANY_COMMIT" = false ]; then
             echo "🌿 No manual PR titles provided. Comparing full branches..."
-            echo "Comparing changes in origin/$BRANCH_FROM_LOWER against reference branch origin/$BRANCH_TO_LOWER"
+            
+            # 3. Print actual differences directly to the log to debug Git's visibility
+            echo "--- Debugging Git Diff output directly ---"
+            git diff --name-status "origin/$BRANCH_TO_LOWER"..."origin/$BRANCH_FROM_LOWER"
+            echo "----------------------------------------"
+            
+            # 4. Use the triple-dot syntax to find changes introduced in FROM that are not in TO
             sf sgd source delta --from "origin/$BRANCH_TO_LOWER" --to "origin/$BRANCH_FROM_LOWER" --output-dir manifests/delta/ --generate-delta          
           else
             echo "🚀 PR Titles found! Generating Delta Manifest From Staged Files Only..."
