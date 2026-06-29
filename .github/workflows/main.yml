@@ -176,7 +176,7 @@ jobs:
           if grep -q "<types>" "${FILE_PATH}"; then
             echo "🚀 Changes detected! Proceeding with Salesforce validation..."
             sf project deploy validate \
-              --manifest "${FILE_PATH}" \
+              --manifests/delta/package.xml \
               --target-org "${{ github.event.inputs.branchTo }}" \
               --wait 30 \
               --test-level RunLocalTests
