@@ -149,11 +149,12 @@ jobs:
             
             # 3. Print actual differences directly to the log to debug Git's visibility
             echo "--- Debugging Git Diff output directly ---"
-            git diff --name-status "origin/$BRANCH_FROM_LOWER"..."origin/$BRANCH_TO_LOWER"
+            git diff --name-status "origin/$BRANCH_TO_LOWER"..."origin/$BRANCH_FROM_LOWER"
             echo "----------------------------------------"
             
             # 4. Use the triple-dot syntax to find changes introduced in FROM that are not in TO
-            sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --output-dir manifests/delta/ --generate-delta          
+            sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --output-dir manifests/delta/ --generate-delta
+            echo "File: manifest/delta/package.xml"
           else
             echo "🚀 PR Titles found! Generating Delta Manifest From Staged Files Only..."
             sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --source-dir staging_source --output-dir manifests/delta/ --generate-delta
