@@ -154,7 +154,7 @@ jobs:
             
             # 4. Use the triple-dot syntax to find changes introduced in FROM that are not in TO
             sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --output-dir manifests/delta/ --generate-delta
-            cat "package.xml"
+            cat manifests/delta/package/package.xml"
           else
             echo "🚀 PR Titles found! Generating Delta Manifest From Staged Files Only..."
             sf sgd source delta --from "origin/$BRANCH_FROM_LOWER" --to "origin/$BRANCH_TO_LOWER" --source-dir staging_source --output-dir manifests/delta/ --generate-delta
